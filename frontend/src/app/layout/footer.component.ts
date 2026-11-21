@@ -19,7 +19,7 @@ import { WhatsappService } from '../services/whatsapp.service';
             <li><a routerLink="/favoritos">Favoritos</a></li>
             <li><a routerLink="/carrito">Carrito</a></li>
             <li><a routerLink="/info">Envíos e información</a></li>
-            <li><a routerLink="/admin">Panel de productos</a></li>
+            <li><a routerLink="/admin">Administración</a></li>
           </ul>
         </div>
         <div>

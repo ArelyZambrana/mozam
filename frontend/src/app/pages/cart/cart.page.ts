@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../services/cart.service';
+import { OrderService } from '../../services/order.service';
 import { OPCIONES_ENTREGA, TipoEntrega, WhatsappService } from '../../services/whatsapp.service';
 
 @Component({
@@ -78,6 +79,7 @@ import { OPCIONES_ENTREGA, TipoEntrega, WhatsappService } from '../../services/w
               <p class="notice">
                 Se abrió WhatsApp con tu pedido. Si no se abrió,
                 <a [href]="ultimoEnlace()" target="_blank" rel="noopener">toca aquí</a>.
+                @if (pedidoId()) { Tu pedido quedó registrado con el número <strong>#{{ pedidoId() }}</strong>. }
               </p>
             }
             <button type="button" class="link-danger" (click)="carrito.vaciar()">Vaciar carrito</button>
@@ -90,11 +92,14 @@ import { OPCIONES_ENTREGA, TipoEntrega, WhatsappService } from '../../services/w
 export class CartPage {
   protected readonly carrito = inject(CartService);
   private readonly wa = inject(WhatsappService);
+  private readonly pedidos = inject(OrderService);
   private readonly fb = inject(FormBuilder).nonNullable;
 
   protected readonly opciones = OPCIONES_ENTREGA;
   protected readonly enviado = signal(false);
   protected readonly ultimoEnlace = signal('#');
+  /** Número del pedido guardado en MySQL; null si todavía no se guardó o no hay servidor */
+  protected readonly pedidoId = signal<number | null>(null);
 
   protected readonly form = this.fb.group({
     nombre: ['', [Validators.required, Validators.minLength(2)]],
@@ -118,5 +123,14 @@ export class CartPage {
     this.ultimoEnlace.set(enlace);
     this.enviado.set(true);
     window.open(enlace, '_blank', 'noopener');
+
+    // Además de abrir WhatsApp, el pedido queda registrado en MySQL. Si el servidor no responde, el
+    // mensaje de WhatsApp igual se envió, así que no se bloquea la compra.
+    const { nombre, entrega, ciudad, notas } = this.form.getRawValue();
+    this.pedidoId.set(null);
+    this.pedidos
+      .crear({ cliente: nombre, entrega, ciudad, notas }, this.carrito.items())
+      .then((r) => this.pedidoId.set(r.id))
+      .catch(() => this.pedidoId.set(null));
   }
 }
