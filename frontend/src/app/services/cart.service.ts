@@ -3,7 +3,6 @@ import { CartItem, Producto } from '../models/product.model';
 
 const STORAGE_KEY = 'mozam-carrito-v1';
 
-/** Carrito de compras con signals. Se guarda en localStorage para no perderlo al recargar. */
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly _items = signal<CartItem[]>(this.cargar());
@@ -20,7 +19,6 @@ export class CartService {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(datos));
       } catch {
-        /* sin almacenamiento disponible: el carrito sigue funcionando en memoria */
       }
     });
   }

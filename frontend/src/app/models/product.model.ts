@@ -4,7 +4,6 @@ export interface Producto {
   id: string;
   nombre: string;
   categoria: Categoria;
-  /** Precio en bolivianos (Bs) */
   precio: number;
   talla: string;
   material?: string;
@@ -15,7 +14,6 @@ export interface Producto {
 }
 
 export interface CartItem {
-  /** Clave única: id del producto + color elegido */
   clave: string;
   producto: Producto;
   color: string;

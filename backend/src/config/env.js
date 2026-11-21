@@ -1,12 +1,11 @@
 import 'dotenv/config';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const aqui = path.dirname(fileURLToPath(import.meta.url));
-const raiz = path.resolve(aqui, '..');
 
 export const config = {
   port: Number(process.env.PORT) || 3000,
+  corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:4200,http://127.0.0.1:4200')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean),
   db: {
     host: process.env.DB_HOST || 'localhost',
     port: Number(process.env.DB_PORT) || 3306,
@@ -19,7 +18,4 @@ export const config = {
     url: (process.env.OLLAMA_URL || 'http://localhost:11434').replace(/\/$/, ''),
     model: process.env.OLLAMA_MODEL || 'gemma3:4b',
   },
-  /** Datos iniciales: se cargan en MySQL la primera vez (y con `npm run seed`) */
-  productsJson: path.join(raiz, 'data', 'products.json'),
-  conocimientoJson: path.join(raiz, 'data', 'conocimiento.json'),
 };

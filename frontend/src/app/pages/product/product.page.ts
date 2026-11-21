@@ -109,7 +109,6 @@ export class ProductPage {
   protected readonly favoritos = inject(FavoritesService);
   private readonly wa = inject(WhatsappService);
 
-  /** Llega desde la ruta /producto/:id */
   readonly id = input.required<string>();
 
   protected readonly producto = computed(() => this.productos.porId(this.id()));
@@ -123,7 +122,6 @@ export class ProductPage {
   protected readonly agregado = signal(false);
   protected readonly errorColor = signal(false);
 
-  /** Si el producto tiene un solo color, queda elegido automáticamente */
   protected readonly colorElegido = computed(() => {
     const p = this.producto();
     if (!p) return null;
@@ -138,7 +136,6 @@ export class ProductPage {
   protected readonly max = Math.max;
 
   constructor() {
-    // Al cambiar de producto se reinicia la selección
     effect(() => {
       this.id();
       this.colorSel.set(null);

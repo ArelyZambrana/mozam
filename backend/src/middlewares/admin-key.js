@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
-import { config } from '../config.js';
+import { config } from '../config/env.js';
+import { HttpError } from '../utils/http-error.js';
 
 function iguales(a, b) {
   const x = Buffer.from(String(a));
@@ -7,11 +8,10 @@ function iguales(a, b) {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
-/** Protege las rutas del panel: exige el header x-admin-key con la clave de ADMIN_KEY. */
-export function exigirAdmin(req, res, next) {
+export function exigirAdmin(req, _res, next) {
   const clave = req.get('x-admin-key');
   if (!clave || !iguales(clave, config.adminKey)) {
-    return res.status(401).json({ error: 'clave_invalida', mensaje: 'Clave de administración incorrecta.' });
+    return next(new HttpError(401, 'clave_invalida', 'Clave de administración incorrecta.'));
   }
   next();
 }

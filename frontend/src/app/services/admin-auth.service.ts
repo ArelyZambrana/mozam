@@ -1,10 +1,10 @@
 import { HttpClient, HttpInterceptorFn } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { API_URL } from '../config/api';
 
 const STORAGE_KEY = 'mozam-admin-clave';
 
-/** Guarda la clave del panel mientras la pestaña esté abierta (sessionStorage) y la valida con el backend. */
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
   private readonly http = inject(HttpClient);
@@ -13,10 +13,9 @@ export class AdminAuthService {
   readonly clave = this._clave.asReadonly();
   readonly activo = computed(() => this._clave() !== null);
 
-  /** Devuelve true si el backend acepta la clave. Lanza error si el servidor no responde. */
   async iniciarSesion(clave: string): Promise<boolean> {
     try {
-      await firstValueFrom(this.http.get('api/admin/verificar', { headers: { 'x-admin-key': clave } }));
+      await firstValueFrom(this.http.get(`${API_URL}/admin/verificar`, { headers: { 'x-admin-key': clave } }));
     } catch (e) {
       if ((e as { status?: number }).status === 401) return false;
       throw e;
@@ -25,7 +24,6 @@ export class AdminAuthService {
     try {
       sessionStorage.setItem(STORAGE_KEY, clave);
     } catch {
-      /* sin almacenamiento: la sesión dura mientras no se recargue */
     }
     return true;
   }
@@ -35,7 +33,6 @@ export class AdminAuthService {
     try {
       sessionStorage.removeItem(STORAGE_KEY);
     } catch {
-      /* nada que limpiar */
     }
   }
 
@@ -48,10 +45,9 @@ export class AdminAuthService {
   }
 }
 
-/** Agrega la clave de administración a las llamadas a /api cuando hay sesión del panel. */
 export const adminKeyInterceptor: HttpInterceptorFn = (req, next) => {
   const clave = inject(AdminAuthService).clave();
-  if (clave && req.url.startsWith('api/') && !req.headers.has('x-admin-key')) {
+  if (clave && req.url.startsWith(`${API_URL}/`) && !req.headers.has('x-admin-key')) {
     req = req.clone({ setHeaders: { 'x-admin-key': clave } });
   }
   return next(req);

@@ -38,7 +38,6 @@ export class FavoritesPage {
   protected readonly productos = inject(ProductService);
   protected readonly favoritos = inject(FavoritesService);
 
-  /** Solo los favoritos que todavía existen en el catálogo (el admin puede haber borrado alguno) */
   protected readonly guardados = computed(() => {
     const ids = new Set(this.favoritos.ids());
     return this.productos.lista().filter((p) => ids.has(p.id));

@@ -2,7 +2,6 @@ import { Injectable, computed, effect, signal } from '@angular/core';
 
 const STORAGE_KEY = 'mozam-favoritos-v1';
 
-/** Lista de deseos: guarda solo los ids de los productos favoritos en localStorage. */
 @Injectable({ providedIn: 'root' })
 export class FavoritesService {
   private readonly _ids = signal<string[]>(this.cargar());
@@ -16,7 +15,6 @@ export class FavoritesService {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(datos));
       } catch {
-        /* sin almacenamiento: funciona en memoria */
       }
     });
   }

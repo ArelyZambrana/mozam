@@ -1,4 +1,3 @@
-/* ============ Mozam · estilos globales ============ */
 
 :root {
   --bg: #0b0a0c;
@@ -7,11 +6,8 @@
   --line: #2c272f;
   --text: #f7eff3;
   --muted: #a99fa6;
-  --pink: #ff44a8; /* rosa del logo */
-  --pink-soft: #ffc9de; /* rosa suave del catálogo */
-  --pink-dark: #c9167a;
-  --paper: #fbfafa; /* fondo claro de las fotos de producto */
-  --danger: #ff7a8a;
+  --pink: #ff44a8;   --pink-soft: #ffc9de;   --pink-dark: #c9167a;
+  --paper: #fbfafa;   --danger: #ff7a8a;
   --radius: 16px;
   --font-title: 'Unbounded', 'Segoe UI', system-ui, sans-serif;
   --font-body: 'Manrope', 'Segoe UI', system-ui, sans-serif;
@@ -155,7 +151,6 @@ h2 {
   gap: 8px;
 }
 
-/* ---------- Botones ---------- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -196,7 +191,6 @@ h2 {
   width: 100%;
 }
 
-/* ---------- Header ---------- */
 .site-header {
   position: sticky;
   top: 0;
@@ -308,7 +302,6 @@ h2 {
   }
 }
 
-/* ---------- Footer ---------- */
 .site-footer {
   margin-top: 40px;
   border-top: 1px solid var(--line);
@@ -342,7 +335,6 @@ h2 {
   }
 }
 
-/* ---------- Hero ---------- */
 .hero {
   padding-block: 56px 24px;
 }
@@ -373,7 +365,6 @@ h2 {
   }
 }
 
-/* ---------- Categorías ---------- */
 .cat-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -432,7 +423,6 @@ h2 {
   }
 }
 
-/* ---------- Tarjeta de producto ---------- */
 .grid-products {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -466,7 +456,6 @@ h2 {
   height: 100%;
   object-fit: contain;
 }
-/* Precio en la esquina inferior derecha, como en el catálogo en PDF */
 .pcard__price {
   position: absolute;
   right: 10px;
@@ -502,7 +491,6 @@ h2 {
   font-size: 0.875rem;
 }
 
-/* ---------- Pasos ---------- */
 .steps {
   list-style: none;
   padding: 0;
@@ -541,7 +529,6 @@ h2 {
   }
 }
 
-/* ---------- Avisos y estados ---------- */
 .notice {
   padding: 12px 16px;
   border-radius: 12px;
@@ -565,7 +552,6 @@ h2 {
   justify-items: center;
 }
 
-/* ---------- Catálogo ---------- */
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -651,7 +637,6 @@ input[type='range'] {
   }
 }
 
-/* ---------- Detalle de producto ---------- */
 .breadcrumb {
   margin-bottom: 18px;
   color: var(--muted);
@@ -782,7 +767,6 @@ input[type='range'] {
   font-weight: 800;
 }
 
-/* ---------- Carrito ---------- */
 .cart {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
@@ -894,7 +878,6 @@ input[type='range'] {
   }
 }
 
-/* ---------- Info ---------- */
 .info__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -931,7 +914,6 @@ input[type='range'] {
   }
 }
 
-/* ---------- Favoritos ---------- */
 .pcard {
   position: relative;
 }
@@ -986,7 +968,6 @@ input[type='range'] {
   gap: 12px;
 }
 
-/* ---------- Panel admin ---------- */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -1155,7 +1136,6 @@ input[type='number'] {
   }
 }
 
-/* ---------- Panel: login, pestañas, pedidos, chat ---------- */
 input[type='password'] {
   width: 100%;
   padding: 11px 12px;
@@ -1219,7 +1199,6 @@ select.estado {
   overflow-wrap: anywhere;
 }
 
-/* ---------- Chatbot ---------- */
 .chat-fab {
   position: fixed;
   right: 20px;

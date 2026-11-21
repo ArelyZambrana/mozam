@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { CartItem } from '../models/product.model';
 import { TipoEntrega } from './whatsapp.service';
+import { API_URL } from '../config/api';
 
 export type EstadoPedido = 'nuevo' | 'confirmado' | 'entregado' | 'cancelado';
 export const ESTADOS_PEDIDO: EstadoPedido[] = ['nuevo', 'confirmado', 'entregado', 'cancelado'];
@@ -27,7 +28,6 @@ export interface MensajeChatGuardado {
   creado_en: string;
 }
 
-/** Pedidos guardados en MySQL. Crear es público; listar y cambiar estado exige la clave del panel. */
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private readonly http = inject(HttpClient);
@@ -37,7 +37,7 @@ export class OrderService {
     items: CartItem[],
   ): Promise<{ id: number; total: number }> {
     return firstValueFrom(
-      this.http.post<{ id: number; total: number }>('api/pedidos', {
+      this.http.post<{ id: number; total: number }>(`${API_URL}/pedidos`, {
         ...datos,
         items: items.map((i) => ({ producto_id: i.producto.id, color: i.color, cantidad: i.cantidad })),
       }),
@@ -45,18 +45,18 @@ export class OrderService {
   }
 
   listar(): Promise<Pedido[]> {
-    return firstValueFrom(this.http.get<Pedido[]>('api/pedidos'));
+    return firstValueFrom(this.http.get<Pedido[]>(`${API_URL}/pedidos`));
   }
 
   cambiarEstado(id: number, estado: EstadoPedido): Promise<unknown> {
-    return firstValueFrom(this.http.patch(`api/pedidos/${id}`, { estado }));
+    return firstValueFrom(this.http.patch(`${API_URL}/pedidos/${id}`, { estado }));
   }
 
   eliminar(id: number): Promise<void> {
-    return firstValueFrom(this.http.delete<void>(`api/pedidos/${id}`));
+    return firstValueFrom(this.http.delete<void>(`${API_URL}/pedidos/${id}`));
   }
 
   mensajesChat(): Promise<MensajeChatGuardado[]> {
-    return firstValueFrom(this.http.get<MensajeChatGuardado[]>('api/chat/mensajes'));
+    return firstValueFrom(this.http.get<MensajeChatGuardado[]>(`${API_URL}/chat/mensajes`));
   }
 }

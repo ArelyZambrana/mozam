@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CartItem, Producto } from '../models/product.model';
 
-/** Número de Mozam con código de país de Bolivia (+591). */
 export const WHATSAPP_NUMERO = '59179787211';
 
 export type TipoEntrega = 'delivery' | 'correo' | 'envio';
@@ -19,7 +18,6 @@ export interface DatosPedido {
   notas: string;
 }
 
-/** Arma los mensajes y enlaces de WhatsApp (wa.me) para pedidos y consultas. */
 @Injectable({ providedIn: 'root' })
 export class WhatsappService {
   enlace(texto: string): string {

@@ -8,7 +8,7 @@ Descripción de los agentes de IA que intervienen en la tienda web **Mozam**: el
 |---|---|---|
 | Modelo | Claude, de Anthropic (Claude Sonnet 5.5), desde la app de Claude | gemma3 (`gemma3:4b`) con Ollama, en la compu de quien corre el proyecto |
 | Rol | Desarrollador asistente: diseña, programa, prueba y documenta el frontend y el backend | Asistente virtual: responde dudas sobre el catálogo, precios, colores y envíos |
-| Dirección | Arely Zambrana (responsable del proyecto) | Instrucciones fijas del backend (`backend/src/routes/chat.js`) |
+| Dirección | Arely Zambrana (responsable del proyecto) | Reglas de conducta fijas y conocimiento leído de MySQL (`backend/src/chatbot/contexto.js`) |
 | Cliente | Mozam, tienda de ropa de Cochabamba (@mozam_cb) | Clientes de la tienda |
 
 Tecnología del proyecto: Angular 19 (`frontend/`), Node.js + Express 5 (`backend/`), MySQL (base de datos), Ollama + gemma3 (chatbot). Frontend y backend son dos aplicaciones separadas, cada una con su `package.json`, que se comunican solo por HTTP.
@@ -23,7 +23,7 @@ Tecnología del proyecto: Angular 19 (`frontend/`), Node.js + Express 5 (`backen
 - Integra el chatbot con Ollama y gemma3.
 - Diseña la interfaz a partir de la identidad visual de la marca.
 - Compila y prueba la aplicación en un navegador automatizado y contra una base MySQL, y corrige lo que encuentra.
-- Documenta el proyecto (este archivo y `README.md`).
+- Documenta el proyecto (este archivo).
 
 **Lo que no hace**
 
@@ -76,31 +76,30 @@ Tecnología del proyecto: Angular 19 (`frontend/`), Node.js + Express 5 (`backen
 
 - **Frontend:** Angular 19 con componentes standalone, **signals**, rutas con carga diferida (`loadComponent`), `withComponentInputBinding()`, formularios reactivos, `HttpClient` con interceptor para la clave del panel y SCSS con variables CSS (tema oscuro con el rosa del logo).
 - **Backend:** Node.js, Express 5 y `mysql2` (consultas parametrizadas, transacciones en los pedidos). No contiene nada del frontend: solo expone la API.
-- **Base de datos:** MySQL, tablas `productos`, `pedidos`, `pedido_items`, `conocimiento` y `chat_mensajes`, creadas automáticamente al arrancar.
+- **Base de datos:** MySQL, tablas `productos`, `pedidos`, `pedido_items`, `conocimiento` y `chat_mensajes`, definidas en `backend/database/mozam.sql`, que también carga los 63 productos y los 11 temas del chatbot.
 - **IA:** Ollama con `gemma3:4b`.
-- El frontend no guarda datos del catálogo: si el backend no responde, muestra un aviso claro. En desarrollo, `frontend/proxy.conf.json` redirige `/api` al backend.
+- El frontend no guarda datos del catálogo: si el backend no responde, muestra un aviso claro. La dirección del backend está en `frontend/src/app/config/api.ts`; el backend habilita CORS para el frontend (`CORS_ORIGINS`).
 
 ## 5. Estructura
 
 ```
 backend/                       Aplicación 1: API, base de datos y chatbot (puerto 3000)
-├─ data/                       products.json y conocimiento.json (datos iniciales)
+├─ database/mozam.sql          Base de datos: tablas y datos iniciales
+├─ .env / .env.example         Puerto, MySQL, clave del panel, Ollama y CORS
 └─ src/
-   ├─ server.js                Express, rutas y arranque
-   ├─ config.js                Variables de entorno (.env)
-   ├─ db.js                    Conexión MySQL, tablas y carga inicial
-   ├─ seed.js                  Recarga los datos iniciales (npm run seed)
-   ├─ ollama.js                Cliente de Ollama con streaming y errores claros
-   ├─ middleware/adminKey.js   Protege las rutas del panel con x-admin-key
-   └─ routes/
-      ├─ productos.js          CRUD con validación
-      ├─ pedidos.js            Crear (total calculado en el servidor), listar, estado
-      ├─ conocimiento.js       CRUD de lo que sabe el chatbot
-      └─ chat.js               Instrucciones dinámicas, streaming y guardado de mensajes
+   ├─ index.js                 Arranque: verifica MySQL y levanta el servidor
+   ├─ app.js                   Express, CORS, rutas y manejo de errores
+   ├─ config/                  env.js (variables) y database.js (pool de MySQL)
+   ├─ routes/index.js          Todas las rutas de /api
+   ├─ controllers/             Lógica y validación de cada endpoint
+   ├─ models/                  Consultas a MySQL
+   ├─ middlewares/             admin-key, rate-limit y errores
+   ├─ chatbot/                 contexto.js (prompt dinámico) y ollama.js (streaming)
+   └─ utils/                   Errores HTTP y utilidades de texto
 frontend/                      Aplicación 2: la tienda en Angular (puerto 4200)
-├─ proxy.conf.json             Redirige /api al backend en desarrollo
 ├─ public/images/              Logo y fotos de los productos
 └─ src/app/
+   ├─ config/api.ts            Dirección del backend
    ├─ models/product.model.ts
    ├─ services/
    │  ├─ product.service.ts       Catálogo por HTTP + CRUD
@@ -119,6 +118,13 @@ frontend/                      Aplicación 2: la tienda en Angular (puerto 4200)
       ├─ admin/                   Panel: productos, pedidos, chat y conocimiento
       └─ info/                    Envíos, políticas y contacto
 ```
+
+## Puesta en marcha
+
+1. Importar la base: `mysql -u root -p < backend/database/mozam.sql` (o desde MySQL Workbench / phpMyAdmin).
+2. Backend: `cd backend`, `npm install`, revisar `.env` (usuario y clave de MySQL) y `npm start`.
+3. Ollama: `ollama pull gemma3:4b` y dejar Ollama abierto.
+4. Frontend: `cd frontend`, `npm install` y `npm start`. Abrir http://localhost:4200. El panel está en `/admin`.
 
 ## 6. Convenciones que sigue el agente
 
@@ -142,7 +148,7 @@ frontend/                      Aplicación 2: la tienda en Angular (puerto 4200)
 ## 8. Verificación realizada
 
 - `ng build` de producción sin errores.
-- **API contra una base MySQL (MariaDB 10.11 compatible):** el catálogo (63 productos) y el conocimiento del chatbot (11 temas) se cargan solos la primera vez; crear, editar y eliminar productos; rechazo de datos inválidos y de rutas de imagen peligrosas; rutas del panel responden 401 sin clave; el pedido valida producto y color, calcula el total con los precios de la base y guarda sus líneas en una transacción; el historial del pedido se conserva aunque se borre el producto; los mensajes del chat se guardan.
+- **API contra una base MySQL (MariaDB 10.11 compatible):** el catálogo (63 productos) y el conocimiento del chatbot (11 temas) se importan desde `mozam.sql`; crear, editar y eliminar productos; rechazo de datos inválidos y de rutas de imagen peligrosas; rutas del panel responden 401 sin clave; el pedido valida producto y color, calcula el total con los precios de la base y guarda sus líneas en una transacción; el historial del pedido se conserva aunque se borre el producto; los mensajes del chat se guardan.
 - **Chatbot:** el flujo completo (instrucciones con el conocimiento, el resumen y el catálogo leídos de MySQL; un tema nuevo aparece en las instrucciones y uno apagado desaparece; streaming hasta el navegador, guardado, y mensajes de error claros si Ollama está apagado o falta el modelo) se probó con un servidor Ollama simulado. La conexión con gemma3 real la valida Arely en su compu.
 - **Navegador automatizado:** login del panel con clave correcta e incorrecta, crear un producto y verlo tras recargar, enviar un pedido desde el carrito y verlo en el panel, cambiar su estado, abrir el chat, conversar y ver los mensajes guardados; el chat también se probó en pantalla de celular.
 - **Separación:** las pruebas se hicieron con el frontend (4200) y el backend (3000) como procesos distintos, hablando solo por HTTP. Con el backend apagado, la tienda, el panel y el chat avisan con un mensaje claro.
@@ -171,7 +177,7 @@ frontend/                      Aplicación 2: la tienda en Angular (puerto 4200)
 ## 11. Instrucciones para seguir trabajando con el agente
 
 - No inventar productos, precios, tallas ni políticas; pedirlos a la dueña.
-- El catálogo y el conocimiento del chatbot viven en MySQL. Los JSON de `backend/data/` son solo la carga inicial.
+- El catálogo y el conocimiento del chatbot viven en MySQL. Los cambios estructurales o datos iniciales se hacen en `backend/database/mozam.sql`.
 - Entregar los archivos completos cuando se modifique código, no fragmentos.
 - Correr `npm run build` (frontend) y probar la API antes de dar un cambio por terminado.
 - Siguientes pasos sugeridos: login real, subida de fotos desde el panel, control de stock, notificación de pedidos nuevos y pruebas unitarias.

@@ -97,7 +97,6 @@ export class CatalogPage {
   protected readonly productos = inject(ProductService);
   protected readonly categorias = CATEGORIAS;
 
-  /** Llega desde la URL (?categoria=faldas) gracias a withComponentInputBinding() */
   readonly categoria = input<string>();
 
   protected readonly busqueda = signal('');

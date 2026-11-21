@@ -8,7 +8,6 @@ import { adminKeyInterceptor } from './services/admin-auth.service';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    // withComponentInputBinding: los parámetros de ruta y query llegan como input() a los componentes
     provideRouter(
       routes,
       withComponentInputBinding(),

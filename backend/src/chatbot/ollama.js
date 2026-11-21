@@ -1,6 +1,5 @@
-import { config } from './config.js';
+import { config } from '../config/env.js';
 
-/** Error con un mensaje listo para mostrarle al cliente. */
 export class OllamaError extends Error {
   constructor(codigo, mensaje) {
     super(mensaje);
@@ -8,7 +7,6 @@ export class OllamaError extends Error {
   }
 }
 
-/** ¿Está Ollama prendido y tiene el modelo descargado? */
 export async function estadoOllama() {
   try {
     const r = await fetch(`${config.ollama.url}/api/tags`, { signal: AbortSignal.timeout(2000) });
@@ -22,18 +20,13 @@ export async function estadoOllama() {
   }
 }
 
-/**
- * Pide una respuesta a Ollama en modo streaming.
- * Devuelve un generador asíncrono que va entregando los trozos de texto.
- * Si Ollama no responde o falta el modelo, lanza OllamaError ANTES de entregar el primer trozo.
- */
-export async function chatEnStreaming(mensajes, señal) {
+export async function chatEnStreaming(mensajes, senal) {
   let respuesta;
   try {
     respuesta = await fetch(`${config.ollama.url}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      signal: señal,
+      signal: senal,
       body: JSON.stringify({
         model: config.ollama.model,
         messages: mensajes,

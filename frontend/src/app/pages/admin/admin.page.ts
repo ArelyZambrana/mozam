@@ -14,10 +14,6 @@ type Pestana = 'productos' | 'pedidos' | 'chat' | 'conocimiento';
 const normalizar = (texto: string) =>
   texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
-/**
- * Panel de administración. Todo se guarda en MySQL a través del backend.
- * Pide la clave de administración (ADMIN_KEY del backend) antes de mostrar nada.
- */
 @Component({
   selector: 'app-admin',
   imports: [RouterLink, ReactiveFormsModule, DatePipe],
@@ -74,7 +70,6 @@ const normalizar = (texto: string) =>
 
         @if (pestana() === 'productos') {
           <div class="admin-bar">
-            <button type="button" class="btn btn--ghost" (click)="restaurar()" [disabled]="ocupado()">Restaurar catálogo original</button>
             <button type="button" class="btn btn--primary" (click)="nuevo()">+ Nuevo producto</button>
           </div>
 
@@ -318,7 +313,6 @@ const normalizar = (texto: string) =>
             lo usa en su siguiente respuesta. Los productos y precios los toma solos de la pestaña Productos.
           </p>
           <div class="admin-bar">
-            <button type="button" class="btn btn--ghost" (click)="restaurarConocimiento()" [disabled]="ocupado()">Restaurar conocimiento original</button>
             <button type="button" class="btn btn--primary" (click)="nuevoTema()">+ Nuevo tema</button>
           </div>
 
@@ -396,18 +390,15 @@ export class AdminPage {
   protected readonly categorias = CATEGORIAS;
   protected readonly estados = ESTADOS_PEDIDO;
 
-  // ----- sesión -----
   protected readonly claveCtrl = this.fb.control('');
   protected readonly errorLogin = signal('');
   protected readonly entrando = signal(false);
 
-  // ----- general -----
   protected readonly pestana = signal<Pestana>('productos');
   protected readonly mensaje = signal('');
   protected readonly aviso = signal('');
   protected readonly ocupado = signal(false);
 
-  // ----- productos -----
   protected readonly busqueda = signal('');
   protected readonly filtroCategoria = signal('');
   protected readonly formAbierto = signal(false);
@@ -451,12 +442,9 @@ export class AdminPage {
 
   protected readonly destacados = computed(() => this.productos.destacados().length);
 
-  // ----- pedidos y chat -----
   protected readonly pedidos = signal<Pedido[]>([]);
   protected readonly pedidoPorEliminar = signal<number | null>(null);
   protected readonly conversaciones = signal<MensajeChatGuardado[]>([]);
-
-  // ===== sesión =====
 
   protected async entrar(): Promise<void> {
     const clave = this.claveCtrl.value.trim();
@@ -484,7 +472,6 @@ export class AdminPage {
     this.aviso.set('');
   }
 
-  /** Muestra el error que devolvió el servidor; si la clave ya no sirve, cierra la sesión. */
   private fallo(e: unknown): void {
     const err = e as { status?: number; error?: { mensaje?: string } };
     if (err.status === 401) {
@@ -509,8 +496,6 @@ export class AdminPage {
     if (p === 'chat') void this.cargarChat();
     if (p === 'conocimiento') void this.cargarTemas();
   }
-
-  // ===== productos =====
 
   protected vistaImagen(): string {
     return this.form.controls.imagen.value;
@@ -611,21 +596,6 @@ export class AdminPage {
     }
   }
 
-  protected async restaurar(): Promise<void> {
-    this.ocupado.set(true);
-    try {
-      await this.productos.restaurar();
-      this.cancelar();
-      this.ok('Se restauró el catálogo original en MySQL.');
-    } catch (e) {
-      this.fallo(e);
-    } finally {
-      this.ocupado.set(false);
-    }
-  }
-
-  // ===== pedidos =====
-
   protected textoEntrega(valor: string): string {
     return OPCIONES_ENTREGA.find((o) => o.valor === valor)?.texto ?? valor;
   }
@@ -661,8 +631,6 @@ export class AdminPage {
     }
   }
 
-  // ===== chat =====
-
   protected async cargarChat(): Promise<void> {
     try {
       this.conversaciones.set(await this.ordenes.mensajesChat());
@@ -671,8 +639,6 @@ export class AdminPage {
       this.fallo(e);
     }
   }
-
-  // ===== conocimiento del chatbot =====
 
   protected readonly temas = signal<Conocimiento[]>([]);
   protected readonly temaAbierto = signal(false);
@@ -749,20 +715,6 @@ export class AdminPage {
       this.temaPorEliminar.set(null);
       this.temas.update((l) => l.filter((x) => x.id !== t.id));
       this.ok(`Se eliminó «${t.tema}».`);
-    } catch (e) {
-      this.fallo(e);
-    } finally {
-      this.ocupado.set(false);
-    }
-  }
-
-  protected async restaurarConocimiento(): Promise<void> {
-    this.ocupado.set(true);
-    try {
-      await this.conocimiento.restaurar();
-      await this.cargarTemas();
-      this.cancelarTema();
-      this.ok('Se restauró el conocimiento original del chatbot.');
     } catch (e) {
       this.fallo(e);
     } finally {

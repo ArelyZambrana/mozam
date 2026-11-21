@@ -1,4 +1,5 @@
 import { Component, ElementRef, effect, signal, viewChild } from '@angular/core';
+import { API_URL } from '../config/api';
 
 interface Mensaje {
   rol: 'user' | 'assistant';
@@ -20,7 +21,6 @@ const SUGERENCIAS = [
   '¿Hacen envíos a otros departamentos?',
 ];
 
-/** Chatbot flotante. Habla con el backend (/api/chat), que consulta a Ollama con el modelo gemma3. */
 @Component({
   selector: 'app-chatbot',
   template: `
@@ -102,7 +102,6 @@ export class ChatbotComponent {
   private readonly sesion = this.obtenerSesion();
 
   constructor() {
-    // Cada vez que cambian los mensajes, baja el scroll hasta el último
     effect(() => {
       this.mensajes();
       setTimeout(() => {
@@ -117,10 +116,9 @@ export class ChatbotComponent {
     if (this.abierto()) await this.revisarEstado();
   }
 
-  /** Avisa de entrada si Ollama está apagado o falta el modelo, en vez de esperar a que falle un mensaje */
   private async revisarEstado(): Promise<void> {
     try {
-      const r = await fetch('api/chat/estado');
+      const r = await fetch(`${API_URL}/chat/estado`);
       if (!r.ok) throw new Error();
       const e: { disponible: boolean; modelo: boolean; modelo_nombre: string } = await r.json();
       if (!e.disponible) this.noDisponible.set('El chatbot está apagado en este momento (Ollama no responde).');
@@ -135,7 +133,6 @@ export class ChatbotComponent {
     const pregunta = texto.trim();
     if (!pregunta || this.escribiendo()) return;
 
-    // Lo que se manda al servidor: solo los mensajes que no son errores
     const historial = [...this.mensajes().filter((m) => !m.error), { rol: 'user' as const, contenido: pregunta }]
       .slice(-8)
       .map(({ rol, contenido }) => ({ rol, contenido }));
@@ -144,7 +141,7 @@ export class ChatbotComponent {
     this.escribiendo.set(true);
 
     try {
-      const r = await fetch('api/chat', {
+      const r = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sesion: this.sesion, mensajes: historial }),
@@ -181,7 +178,6 @@ export class ChatbotComponent {
     this.mensajes.update((l) => [...l.slice(0, -1), { rol: 'assistant', contenido: texto, error: true }]);
   }
 
-  /** Convierte **negrita** en partes para pintarlas sin usar innerHTML, y las viñetas "* " en "• " */
   protected partes(texto: string): Parte[] {
     const limpio = texto.replace(/^\s*[*-]\s+/gm, '• ');
     return limpio

@@ -98,7 +98,6 @@ export class CartPage {
   protected readonly opciones = OPCIONES_ENTREGA;
   protected readonly enviado = signal(false);
   protected readonly ultimoEnlace = signal('#');
-  /** Número del pedido guardado en MySQL; null si todavía no se guardó o no hay servidor */
   protected readonly pedidoId = signal<number | null>(null);
 
   protected readonly form = this.fb.group({
@@ -124,8 +123,6 @@ export class CartPage {
     this.enviado.set(true);
     window.open(enlace, '_blank', 'noopener');
 
-    // Además de abrir WhatsApp, el pedido queda registrado en MySQL. Si el servidor no responde, el
-    // mensaje de WhatsApp igual se envió, así que no se bloquea la compra.
     const { nombre, entrega, ciudad, notas } = this.form.getRawValue();
     this.pedidoId.set(null);
     this.pedidos
